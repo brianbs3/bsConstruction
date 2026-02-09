@@ -11,7 +11,7 @@ getAllExpenses = () => {
         url: `/expenses/all`,
         success: function (d) {
             const data = d.data[0];
-            // console.log(d.data[0])
+            
             $('#root').html(`
                 <h2>Found ${data.length} Items</h2>
                 <table width=100% class="table table-striped table-dark">
@@ -20,7 +20,6 @@ getAllExpenses = () => {
             let count = 0;
             Object.keys(data).forEach((k, v) => {
                 const d = data[k]
-                console.log(d)
                 
                 if(d){
                     $('#expenseTableBody').append(
@@ -55,14 +54,14 @@ getAllExpenses = () => {
 
 getCategorySummary = () => {
     // const d = new Date();
-    console.log('getting category summary')
+    let totalCost = 0;
     $.ajax({
         type: 'GET',
         contentType: 'application/json',
         url: `/expenses/categorySummary`,
         success: function (d) {
             const data = d.data[0];
-            // console.log(d.data[0])
+        
             $('#root').html(`
                 <h2>Found ${data.length} Items</h2>
                 <table width=100% class="table table-striped table-dark">
@@ -71,9 +70,9 @@ getCategorySummary = () => {
             let count = 0;
             Object.keys(data).forEach((k, v) => {
                 const d = data[k]
-                console.log(d)
                 
                 if(d){
+                    totalCost += d.totalCost;
                     $('#expenseTableBody').append(
                         `<tr>
                     <td>${++count}</td>
@@ -90,7 +89,10 @@ getCategorySummary = () => {
             })
                 $('#allProductBody').append(
                 `</tbody>
-                </table>`)
+                </table>
+                `);
+                $('#root').append(
+                `<h2>Total Cost: $${totalCost.toFixed(2)}</h2>`);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             if (jqXHR.readyState == 0)
@@ -101,8 +103,41 @@ getCategorySummary = () => {
     // console.log(data);
 }
 
+clearReceiptForm = () => {
+    $('#receiptVendor').val('');
+    $('#receiptPurchaseDate').val('');
+    $('#receiptTotal').val('');
+    $('#receiptOrderNumber').val('');
+    $('#receiptNotes').val('');
+    $('#receiptProjectId').val('');
+}
 
-
+saveReceipt = () => {
+    const data = {
+        "vendor": $('#receiptVendor').val(),
+        "purchaseDate": $('#receiptPurchaseDate').val(),
+        "total": $('#receiptTotal').val(),
+        "projectId": $('#receiptProjectId').val(),
+        "orderNum": $('#receiptOrderNum').val(),
+        "notes": $('#receiptNotes').val()
+    }
+    $.ajax({
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        url: `/expenses/receipts`,
+        success: function (d) {
+            console.log('added receipt...')
+            console.log(d)
+            $('#receiptId').val(d.id);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.readyState == 0)
+                window.location.replace(global_site_redirect);
+            $("#bsNetworkStatus").html(jqXHR);
+        }
+    });
+}
 
 truncateString = (str, maxLength=20) => {
     if (str && str.length > maxLength) {

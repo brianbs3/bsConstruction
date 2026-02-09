@@ -1,5 +1,6 @@
 'use strict';
 const knex = require('../config/knex');
+const db = require('../models');
 // const axios = require('axios');
 // const fs = require('fs');
 
@@ -25,7 +26,11 @@ const getExpenses = () => {
 const getCategorySummary = () => {
     return new Promise(async (resolve, reject) => {
         try{
-            const p = await knex.raw('select category,count(*) as count,sum(quantity*price) as totalCost, sum(quantity) as totalCount, sum(quantity*price)/sum(quantity) as avgPerItem from items join expenseCategories on items.categoryId=expenseCategories.id where items.exclude=false group by category')
+            const p = await knex.raw(`
+                SELECT category,count(*) AS count,sum(quantity*price) AS totalCost, SUM(quantity) AS totalCount, SUM(quantity*price)/SUM(quantity) AS avgPerItem 
+                FROM items JOIN expenseCategories ON items.categoryId=expenseCategories.id 
+                WHERE items.exclude=false
+                GROUP BY category`)
             
             resolve(p);
         }
@@ -39,7 +44,12 @@ const getCategorySummary = () => {
 const getAll = () => {
     return new Promise(async (resolve, reject) => {
         try{
-            const p = await knex.raw('select *,i.id as itemId, r.id as receiptId, p.id as projectId, e.id as expenseCategoryId from items i join receipts r on i.receiptId=r.id join projects p on r.projectId=p.id join expenseCategories e on i.categoryId=e.id')
+            const p = await knex.raw(`
+                select *,i.id as itemId, r.id as receiptId, p.id as projectId, e.id as expenseCategoryId 
+                from items i join receipts r on i.receiptId=r.id 
+                join projects p on r.projectId=p.id 
+                join expenseCategories e on i.categoryId=e.id 
+                where i.exclude=false`)
             
             resolve(p);
         }
@@ -50,8 +60,61 @@ const getAll = () => {
     });
 }
 
+const getExpenseCategories = () => {
+    return new Promise(async (resolve, reject) => {
+        try{
+            const p = await knex.columns()
+            .select()
+            .from('expenseCategories')
+            
+            resolve(p);
+        }
+        catch(error){
+            console.log(error);
+            reject(new Error(`Cannot get items`));
+        }
+    });
+}
+
+const getReceipts = () => {
+    return new Promise(async (resolve, reject) => {
+        try{
+            const p = await knex.columns()
+            .select()
+            .from('receipts')
+            
+            resolve(p);
+        }
+        catch(error){
+            console.log(error);
+            reject(new Error(`Cannot get items`));
+        }
+    });
+}
+
+const addReceipt = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try{
+            await db.sequelize.models.receipts.upsert(data);
+            console.log(data)
+            let receipt = await db.sequelize.models.receipts.findOne({
+                where: { vendor:data.vendor, purchaseDate:data.purchaseDate, total:data.total, projectId:data.projectId }
+            });
+                                
+            resolve(receipt)
+        }
+        catch(error){
+            console.log(error);
+            reject(new Error(`Cannot add receipt`));
+        }
+    });
+}
+
 module.exports = {
     getExpenses,
     getCategorySummary,
-    getAll
+    getAll,
+    getExpenseCategories,
+    getReceipts,
+    addReceipt
 };

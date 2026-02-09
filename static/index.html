@@ -47,10 +47,65 @@
                 </li> -->
                 <li><button class="btn btn-success" href="#" onClick="getAllExpenses()" data-toggle="modal" data-target="#expenseSummary">All Expenses</button> &nbsp;</li>
                 <li><button class="btn btn-success" href="#" onClick="getCategorySummary()" data-toggle="modal" data-target="#categorySummary">Category Summary</button> &nbsp;</li>
+                <li><button class="btn btn-success" href="#" data-toggle="modal" data-target="#addReceiptModal">Add Receipt</button> &nbsp;</li>
                 
             </ul>
         </div>
     </nav>
+    </div>
+
+    <!-- Add Receipt Modal -->
+    <div class="modal fade bd-example-modal-lg" id="addReceiptModal" tabindex="-1" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Receipt</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body modal-lg bsModal">
+                    <form name=productForm id=productForm class="form-inline">
+                        <table class=formTable>
+                            <tr>
+                                <td>Vendor</td>
+                                <td><input id=receiptVendor class="form-control mr-sm-2" type=text name=receiptVendor></td>
+                            </tr>
+                            <tr>
+                                <td>Date</td>
+                                <td><input size=50 id=receiptPurchaseDate  class="form-control mr-sm-2" type=text name=receiptPurchaseDate></td>
+                            </tr>
+                            <tr>
+                                <td>Total</td>
+                                <td><input size=50 id=receiptTotal placeholder="$" class="form-control mr-sm-2" type=text name=receiptTotal></td>
+                            </tr>
+                            <tr>
+                                <td>Project Id</td>
+                                <td><input id=receiptProjectId placeholder="" class="form-control mr-sm-2" type=text name=receiptProjectId></td>
+                            </tr>
+                            <tr>
+                                <td>Order Number</td>
+                                <td><input id=receiptOrderNum placeholder="" class="form-control mr-sm-2" type=text name=receiptOrderNum></td>
+                            </tr>
+                            <tr>
+                                <td>Notes</td>
+                                <td><textarea cols="30" rows="5" id=receiptNotes placeholder="" class="form-control mr-sm-2" type=text name=receiptNotes></textarea></td>
+                            </tr>
+                            <tr>
+                                <td>ID</td>
+                                <td><input id=receiptId></td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" onClick="clearReceiptForm()">Clear</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onClick=saveReceipt()>Save</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div id="root"></div>
