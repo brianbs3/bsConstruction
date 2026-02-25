@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { formatJSON11 } = require('../utils/format');
-const {getExpenses,getCategorySummary,getAll,getExpenseCategories,getReceipts,addReceipt} = require('../utils/expenses')
+const {getExpenses,getCategorySummary,getAll,getExpenseCategories,getReceipts,addReceipt,addItem} = require('../utils/expenses')
 const knex = require('../config/knex');
 const pjson = require('../package.json');
 const moment = require('moment');
@@ -58,6 +58,19 @@ router.post('/receipts', async (req, res) => {
         const {vendor, purchaseDate, total, projectId, notes, orderNum} = req.body;
         
         const r = await addReceipt({vendor: vendor, purchaseDate: purchaseDate, total: total, notes:notes, projectId: projectId, orderNum:orderNum});
+        return res.status(201).json(r);
+    }
+    catch (err) {
+        console.error('Error uploading receipt: ', err);
+        return res.status(500).json({ status: 'FAILED', message: err.message });
+    }
+});
+
+router.post('/items', async (req, res) => {
+    try {
+        const {description, quantity,price,receiptId,categoryId,itemNum,exclude,notes} = req.body;
+        
+        const r = await addItem({description:description, quantity:quantity,price:price,receiptId:receiptId,categoryId:categoryId,itemNum:itemNum,exclude:exclude,notes:notes});
         return res.status(201).json(r);
     }
     catch (err) {

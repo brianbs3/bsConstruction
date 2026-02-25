@@ -137,6 +137,11 @@
                                 <td><input size=50 id=itemPrice placeholder="$" class="form-control mr-sm-2" type=text
                                         name=itemPrice></td>
                             </tr>
+                             <tr>
+                                <td>Item #</td>
+                                <td><input size=50 id=itemNum class="form-control mr-sm-2" type=text
+                                        name=itemNum></td>
+                            </tr>
                             <tr>
                                 <td>Receipt Id</td>
                                 <td><select class="form-control mr-sm-2" name=itemReceiptId id=itemReceiptId>
@@ -154,8 +159,7 @@
                             </tr>
                             <tr>
                                 <td>Exclude</td>
-                                <td><checkbox cols="30" rows="5" id=itemExclude placeholder="" class="form-control mr-sm-2"
-                                        type=text name=itemExclude></checkbox></td>
+                                <td><input type="checkbox" id=itemExclude name=itemExclude></checkbox></td>
                             </tr>
                             <tr>
                                 <td>Notes</td>
@@ -169,6 +173,18 @@
                     <button type="button" class="btn btn-warning" onClick="clearItemForm()">Clear</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-success" onClick=saveItem()>Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div style="position: fixed; top: 0; right: 0; z-index: 9999">
+        <div id="toast" class="toast align-items-center text-white bg-primary border-0" role="alert"
+            aria-live="assertive" aria-atomic="true" style="position: relative;">
+            <div class="d-flex">
+                <div class="toast-body" id="toast_body">
+                    Hello, world! This is a toast message.
                 </div>
             </div>
         </div>

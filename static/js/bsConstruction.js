@@ -110,6 +110,21 @@ clearReceiptForm = () => {
     $('#receiptOrderNumber').val('');
     $('#receiptNotes').val('');
     $('#receiptProjectId').val('');
+    $('#receiptOrderNum').val('');
+    $('#receiptId').val('');
+}
+
+clearItemForm = () => {
+    $('#itemDescription').val('');
+    $('#itemQuantity').val('');
+    $('#itemReceiptId').val('');
+    $('#itemPrice').val('');
+    $('#itemExpenseCategory').val('');
+    $('#itemNum').val('');
+    $('#itemExclude').prop('checked', false);
+    $('#itemNotes').val('');
+    populateReceiptDropdown();
+    populateCategoryDropdown();
 }
 
 saveReceipt = () => {
@@ -139,6 +154,40 @@ saveReceipt = () => {
     });
 }
 
+saveItem = () => {
+  
+    const data = {
+        "description": $('#itemDescription').val(),
+        "quantity": $('#itemQuantity').val(),
+        "receiptId": $('#itemReceiptId').val(),
+        "price": $('#itemPrice').val(),
+        "categoryId": $('#itemExpenseCategory').val(),
+        "itemNum": $('#itemNum').val(),
+        "exclude": "TODO",
+        "exclude": ($('#itemExclude').is(':checked')) ? true : false,
+        "notes": $('#itemNotes').val()
+    }
+    console.log(data);
+    $.ajax({
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        url: `/expenses/items`,
+        success: function (d) {
+            console.log('added item...')
+            console.log(d)
+            $('#toast_body').html(`Adding item ${$('#itemDescription').val()}`)
+            $('#toast').show();
+            setTimeout(() => $('#toast').hide(), 5000);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.readyState == 0)
+                window.location.replace(global_site_redirect);
+            $("#bsNetworkStatus").html(jqXHR);
+        }
+    });
+}
+
 populateReceiptDropdown = () => {
     $(`#itemReceiptId`)
         .find('option')
@@ -157,7 +206,7 @@ populateReceiptDropdown = () => {
             console.log(data);
             data.data.forEach((v) => {
                 const receiptDate = new Date(v.purchaseDate).toISOString().split('T')[0];
-                $(`#itemReceiptId`).append(`'<option value='${v.id}'>(${v.id}) ${v.vendor} - ${receiptDate}</option>'`);
+                $(`#itemReceiptId`).append(`'<option value='${v.id}'>(${v.id}) ${v.vendor} - ($${v.total}) - ${receiptDate}</option>'`);
             });
         },
         error: function (jqXHR, textStatus, errorThrown) {
