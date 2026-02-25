@@ -110,11 +110,30 @@ const addReceipt = (data) => {
     });
 }
 
+const addItem = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try{
+            await db.sequelize.models.items.upsert(data);
+            console.log(data)
+            let item = await db.sequelize.models.items.findOne({
+                where: { description:data.description, receiptId:data.receiptId }
+            });
+                                
+            resolve(item)
+        }
+        catch(error){
+            console.log(error);
+            reject(new Error(`Cannot add item`));
+        }
+    });
+}
+
 module.exports = {
     getExpenses,
     getCategorySummary,
     getAll,
     getExpenseCategories,
     getReceipts,
-    addReceipt
+    addReceipt,
+    addItem
 };
