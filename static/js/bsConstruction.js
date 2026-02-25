@@ -139,6 +139,67 @@ saveReceipt = () => {
     });
 }
 
+populateReceiptDropdown = () => {
+    $(`#itemReceiptId`)
+        .find('option')
+        .remove()
+        .end()
+        .append('<option value=0>--- Select One ---</option>')
+        .val(0);
+
+    $.ajax({
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'json',
+        processData: true,
+        url: "/expenses/receipts",
+        success: function (data) {
+            console.log(data);
+            data.data.forEach((v) => {
+                const receiptDate = new Date(v.purchaseDate).toISOString().split('T')[0];
+                $(`#itemReceiptId`).append(`'<option value='${v.id}'>(${v.id}) ${v.vendor} - ${receiptDate}</option>'`);
+            });
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.readyState == 0)
+                window.location.replace(global_site_redirect);
+            $("#bsNetworkStatus").html(jqXHR);
+        }
+    });
+}
+
+populateCategoryDropdown = () => {
+    $(`#itemExpenseCategory`)
+        .find('option')
+        .remove()
+        .end()
+        .append('<option value=0>--- Select One ---</option>')
+        .val(0);
+
+    $.ajax({
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'json',
+        processData: true,
+        url: "/expenses/expenseCategories",
+        success: function (data) {
+            data.data.forEach((v) => {
+                $(`#itemExpenseCategory`).append(`<option value='${v.id}'>${v.category}</option>'`);
+            });
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.readyState == 0)
+                window.location.replace(global_site_redirect);
+            $("#bsNetworkStatus").html(jqXHR);
+        }
+    });
+}
+
+setupAddItemForm = () => {
+    populateCategoryDropdown();
+    populateReceiptDropdown();
+}
+
 truncateString = (str, maxLength=20) => {
     if (str && str.length > maxLength) {
         // If the string is longer than maxLength, truncate and add ellipsis
