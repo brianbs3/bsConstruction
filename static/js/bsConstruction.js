@@ -25,7 +25,7 @@ getAllExpenses = () => {
                     $('#expenseTableBody').append(
                         `<tr>
                     <td>${++count}</td>
-                    <td>${d.id}</td>
+                    <td><a href=# onClick="populateItemForm('${d.itemId}');" data-toggle="modal" data-target="#addItemModal">${d.itemId}</a></td>
                     <td>${d.vendor}</td>
                     <td>${d.description}</td>
                     <td>${d.quantity}</td>
@@ -235,6 +235,36 @@ populateCategoryDropdown = () => {
             data.data.forEach((v) => {
                 $(`#itemExpenseCategory`).append(`<option value='${v.id}'>${v.category}</option>'`);
             });
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.readyState == 0)
+                window.location.replace(global_site_redirect);
+            $("#bsNetworkStatus").html(jqXHR);
+        }
+    });
+}
+
+populateItemForm = (id) => {
+    $.ajax({
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'json',
+        processData: true,
+        url: `/expenses/items/${id}`,
+        success: function (data) {
+            const d = data.data[0];
+            $('#itemDescription').val(d.description);
+            $('#itemQuantity').val(d.quantity);
+            $('#itemReceiptId').val(d.receiptId);
+            $('#itemPrice').val(d.price);
+            $('#itemExpenseCategory').val('');
+            $('#itemNum').val(d.itemNum);
+            if(d.exclude){ $('#itemExclude').prop('checked', true); }
+            else{$('#itemExclude').prop('checked', false);}
+            
+            $('#itemNotes').val(d.notes);
+            // populateReceiptDropdown();
+            // populateCategoryDropdown();
         },
         error: function (jqXHR, textStatus, errorThrown) {
             if (jqXHR.readyState == 0)

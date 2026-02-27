@@ -30,7 +30,8 @@ const getCategorySummary = () => {
                 SELECT category,count(*) AS count,sum(quantity*price) AS totalCost, SUM(quantity) AS totalCount, SUM(quantity*price)/SUM(quantity) AS avgPerItem 
                 FROM items JOIN expenseCategories ON items.categoryId=expenseCategories.id 
                 WHERE items.exclude=false
-                GROUP BY category`)
+                GROUP BY category
+                ORDER BY totalCost`)
             
             resolve(p);
         }
@@ -92,6 +93,23 @@ const getReceipts = () => {
     });
 }
 
+const lookupItem = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try{
+            const i = await knex.columns()
+            .select()
+            .from('items')
+            .where('id', '=', id)
+            
+            resolve(i);
+        }
+        catch(error){
+            console.log(error);
+            reject(new Error(`Cannot get items`));
+        }
+    });
+}
+
 const addReceipt = (data) => {
     return new Promise(async (resolve, reject) => {
         try{
@@ -135,5 +153,6 @@ module.exports = {
     getExpenseCategories,
     getReceipts,
     addReceipt,
-    addItem
+    addItem,
+    lookupItem
 };
