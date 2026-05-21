@@ -1,5 +1,6 @@
 $(document).ready(() => {
     console.log('ready')
+    flatpickr('#receiptPurchaseDate', {});
 });
 
 getAllExpenses = () => {
@@ -54,6 +55,10 @@ getAllExpenses = () => {
 
 getCategorySummary = () => {
     // const d = new Date();
+    const formatter = new Intl.NumberFormat('en-US',{
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
     let totalCost = 0;
     $.ajax({
         type: 'GET',
@@ -78,21 +83,23 @@ getCategorySummary = () => {
                     <td>${++count}</td>
                     <td>${d.category}</td>
                     <td>${d.count}</td>
-                    <td>$${d.totalCost.toFixed(2)}</td>
+                    <td>$${formatter.format(d.totalCost)}</td>
                     <td>${d.totalCount}</td>
-                    <td>$${d.avgPerItem.toFixed(2)}</td>
+                    <td>$${formatter.format(d.avgPerItem)}</td>
                 </tr>`
                     );
                 }
                 
                 
             })
-                $('#allProductBody').append(
-                `</tbody>
-                </table>
-                `);
-                $('#root').append(
-                `<h2>Total Cost: $${totalCost.toFixed(2)}</h2>`);
+            
+            totalCost = formatter.format(totalCost);
+            $('#allProductBody').append(
+            `</tbody>
+            </table>
+            `);
+            $('#root').append(
+            `<h2>Total Cost: $${totalCost}</h2>`);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             if (jqXHR.readyState == 0)
@@ -248,6 +255,33 @@ setupAddItemForm = () => {
     populateCategoryDropdown();
     populateReceiptDropdown();
 }
+
+lookupItemNum = () => {
+    const itemNum = $('#itemNum').val();
+    console.log(`Looking up: ${itemNum}`)
+
+    $.ajax({
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'json',
+        processData: true,
+        url: `/expenses/items/${itemNum}`,
+        success: function (data) {
+            console.log(data);
+            if(data.meta.totalResourceCount > 0) {
+                $('#itemDescription').val(data.data[0].description)
+                $('#itemPrice').val(data.data[0].price)
+                $('#itemExpenseCategory').val(data.data[0].categoryId)
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.readyState == 0)
+                window.location.replace(global_site_redirect);
+            $("#bsNetworkStatus").html(jqXHR);
+        }
+    });
+}
+
 
 truncateString = (str, maxLength=20) => {
     if (str && str.length > maxLength) {
