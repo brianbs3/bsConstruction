@@ -92,6 +92,23 @@ const getReceipts = () => {
     });
 }
 
+const getItemsByNum = (itemNum) => {
+    return new Promise(async (resolve, reject) => {
+        try{
+            const p = await knex.columns()
+            .select()
+            .from('items')
+            .where('itemNum', '=', itemNum)
+            
+            resolve(p);
+        }
+        catch(error){
+            console.log(error);
+            reject(new Error(`Cannot get items`));
+        }
+    });
+}
+
 const addReceipt = (data) => {
     return new Promise(async (resolve, reject) => {
         try{
@@ -135,5 +152,6 @@ module.exports = {
     getExpenseCategories,
     getReceipts,
     addReceipt,
-    addItem
+    addItem,
+    getItemsByNum
 };
