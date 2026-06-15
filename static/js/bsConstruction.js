@@ -1,6 +1,9 @@
 $(document).ready(() => {
     console.log('ready')
     flatpickr('#receiptPurchaseDate', {});
+    $('#addItemModal').on('shown.bs.modal', () => {
+        $('#itemNum').focus();
+    });
 });
 
 getAllExpenses = () => {
@@ -132,6 +135,7 @@ clearItemForm = () => {
     $('#itemNotes').val('');
     populateReceiptDropdown();
     populateCategoryDropdown();
+    $('#itemNum').focus();
 }
 
 saveReceipt = () => {
@@ -211,7 +215,7 @@ populateReceiptDropdown = () => {
         url: "/expenses/receipts",
         success: function (data) {
             console.log(data);
-            data.data.forEach((v) => {
+            data.data.sort((a, b) => b.id - a.id).forEach((v) => {
                 const receiptDate = new Date(v.purchaseDate).toISOString().split('T')[0];
                 $(`#itemReceiptId`).append(`'<option value='${v.id}'>(${v.id}) ${v.vendor} - ($${v.total}) - ${receiptDate}</option>'`);
             });
