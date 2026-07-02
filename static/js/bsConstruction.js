@@ -56,12 +56,12 @@ getAllExpenses = () => {
     // console.log(data);
 }
 
+const currencyFormatter = new Intl.NumberFormat('en-US',{
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
 getCategorySummary = () => {
-    // const d = new Date();
-    const formatter = new Intl.NumberFormat('en-US',{
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
     let totalCost = 0;
     $.ajax({
         type: 'GET',
@@ -69,7 +69,7 @@ getCategorySummary = () => {
         url: `/expenses/categorySummary`,
         success: function (d) {
             const data = d.data[0];
-        
+
             $('#root').html(`
                 <h2>Found ${data.length} Items</h2>
                 <table width=100% class="table table-striped table-dark">
@@ -78,25 +78,30 @@ getCategorySummary = () => {
             let count = 0;
             Object.keys(data).forEach((k, v) => {
                 const d = data[k]
-                
+
                 if(d){
                     totalCost += d.totalCost;
+                    ++count;
                     $('#expenseTableBody').append(
-                        `<tr>
-                    <td>${++count}</td>
-                    <td>${d.category}</td>
+                        `<tr class="category-row" style="cursor:pointer" onclick="toggleCategoryDrilldown(${d.categoryId}, '${d.category.replace(/'/g, "\\'")}')">
+                    <td>${count}</td>
+                    <td><span id="caret-${d.categoryId}">&#9656;</span> ${d.category}</td>
                     <td>${d.count}</td>
-                    <td>$${formatter.format(d.totalCost)}</td>
+                    <td>$${currencyFormatter.format(d.totalCost)}</td>
                     <td>${d.totalCount}</td>
-                    <td>$${formatter.format(d.avgPerItem)}</td>
+                    <td>$${currencyFormatter.format(d.avgPerItem)}</td>
+                </tr>
+                <tr id="subRow-${d.categoryId}" style="display:none">
+                    <td></td>
+                    <td colspan=5><div id="subTable-${d.categoryId}"></div></td>
                 </tr>`
                     );
                 }
-                
-                
+
+
             })
-            
-            totalCost = formatter.format(totalCost);
+
+            totalCost = currencyFormatter.format(totalCost);
             $('#allProductBody').append(
             `</tbody>
             </table>
@@ -111,6 +116,59 @@ getCategorySummary = () => {
         }
     });
     // console.log(data);
+}
+
+toggleCategoryDrilldown = (categoryId, categoryName) => {
+    const $subRow = $(`#subRow-${categoryId}`);
+    const $caret = $(`#caret-${categoryId}`);
+
+    if ($subRow.is(':visible')) {
+        $subRow.hide();
+        $caret.html('&#9656;');
+        return;
+    }
+
+    $caret.html('&#9662;');
+
+    if ($subRow.data('loaded')) {
+        $subRow.show();
+        return;
+    }
+
+    $.ajax({
+        type: 'GET',
+        contentType: 'application/json',
+        url: `/expenses/categorySummary/${categoryId}`,
+        success: function (d) {
+            const data = d.data[0];
+
+            const rows = data.map((row) => {
+                const label = (row.categoryId == categoryId)
+                    ? `${categoryName} (direct)`
+                    : `&#8627; ${row.category}`;
+                return `<tr>
+                    <td>${label}</td>
+                    <td>${row.count}</td>
+                    <td>$${currencyFormatter.format(row.totalCost)}</td>
+                    <td>${row.totalCount}</td>
+                    <td>$${currencyFormatter.format(row.avgPerItem)}</td>
+                </tr>`;
+            }).join('');
+
+            $(`#subTable-${categoryId}`).html(
+                `<table width=100% class="table table-sm table-dark mb-0">
+                <thead><th>Category</th><th>Count</th><th>Total Cost</th><th>Total Count</th><th>Avg Price Per Item</th></thead>
+                <tbody>${rows}</tbody>
+                </table>`
+            );
+            $subRow.data('loaded', true).show();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.readyState == 0)
+                window.location.replace(global_site_redirect);
+            $("#bsNetworkStatus").html(jqXHR);
+        }
+    });
 }
 
 clearReceiptForm = () => {
