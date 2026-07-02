@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { formatJSON11 } = require('../utils/format');
-const {getExpenses,getCategorySummary,getAll,getExpenseCategories,getReceipts,addReceipt,addItem,getItemsByNum} = require('../utils/expenses')
+const {getExpenses,getCategorySummary,getCategorySummaryDetail,getAll,getExpenseCategories,getReceipts,addReceipt,addItem,getItemsByNum} = require('../utils/expenses')
 const knex = require('../config/knex');
 const pjson = require('../package.json');
 const moment = require('moment');
@@ -28,6 +28,15 @@ router.get('/categorySummary', async (req, res) => {
     ])
 
     return res.json(formatJSON11(coinCollection))
+});
+
+router.get('/categorySummary/:parentId', async (req, res) => {
+    const {parentId} = req.params;
+    const [detail] = await Promise.all([
+        getCategorySummaryDetail(parentId)
+    ])
+
+    return res.json(formatJSON11(detail))
 });
 router.get('/all', async (req, res) => {
     const [coinCollection] = await Promise.all([

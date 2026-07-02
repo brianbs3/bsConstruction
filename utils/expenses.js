@@ -26,12 +26,51 @@ const getExpenses = () => {
 const getCategorySummary = () => {
     return new Promise(async (resolve, reject) => {
         try{
+            // Rolls subcategory totals up into their top-level parent (parentId=0).
+            // Subcategories with a missing/dangling parent fall back to being their own top-level row.
             const p = await knex.raw(`
-                SELECT category,count(*) AS count,sum(quantity*price) AS totalCost, SUM(quantity) AS totalCount, SUM(quantity*price)/SUM(quantity) AS avgPerItem 
-                FROM items JOIN expenseCategories ON items.categoryId=expenseCategories.id 
-                WHERE items.exclude=false
-                GROUP BY category`)
-            
+                SELECT
+                    top.id AS categoryId,
+                    top.category AS category,
+                    count(*) AS count,
+                    sum(i.quantity*i.price) AS totalCost,
+                    SUM(i.quantity) AS totalCount,
+                    SUM(i.quantity*i.price)/SUM(i.quantity) AS avgPerItem
+                FROM items i
+                JOIN expenseCategories c ON i.categoryId=c.id
+                LEFT JOIN expenseCategories parent ON c.parentId=parent.id
+                JOIN expenseCategories top ON top.id = IF(c.parentId=0 OR parent.id IS NULL, c.id, parent.id)
+                WHERE i.exclude=false
+                GROUP BY top.id, top.category
+                ORDER BY top.category`)
+
+            resolve(p);
+        }
+        catch(error){
+            console.log(error);
+            reject(new Error(`Cannot get items`));
+        }
+    });
+}
+
+const getCategorySummaryDetail = (parentId) => {
+    return new Promise(async (resolve, reject) => {
+        try{
+            // Direct items on the parent category itself plus each subcategory's own totals.
+            const p = await knex.raw(`
+                SELECT
+                    c.id AS categoryId,
+                    c.category AS category,
+                    count(*) AS count,
+                    sum(i.quantity*i.price) AS totalCost,
+                    SUM(i.quantity) AS totalCount,
+                    SUM(i.quantity*i.price)/SUM(i.quantity) AS avgPerItem
+                FROM items i
+                JOIN expenseCategories c ON i.categoryId=c.id
+                WHERE i.exclude=false AND (c.id=? OR c.parentId=?)
+                GROUP BY c.id, c.category
+                ORDER BY (c.id=?) DESC, c.category`, [parentId, parentId, parentId])
+
             resolve(p);
         }
         catch(error){
@@ -148,6 +187,7 @@ const addItem = (data) => {
 module.exports = {
     getExpenses,
     getCategorySummary,
+    getCategorySummaryDetail,
     getAll,
     getExpenseCategories,
     getReceipts,
